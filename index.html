@@ -5,191 +5,154 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ristorante Bar Gelatomania - Prenotazioni</title>
 <style>
-  *, *::before, *::after { box-sizing: border-box; }
+* { box-sizing: border-box; }
 
-  html, body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  }
+html, body { margin:0; padding:0; height:100%; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
 
-  body {
-    background: url("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ7qyB_gWAVXSCGVHqhNv-r0QHDUDOxm7ZbzA&s") no-repeat center center fixed;
-    background-size: cover;
-    color: #111;
-  }
+body {
+  background: url("https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ7qyB_gWAVXSCGVHqhNv-r0QHDUDOxm7ZbzA&s") no-repeat center center fixed;
+  background-size: cover;
+  color: #111;
+}
 
-  /* overlay scuro per leggibilità */
-  body::before {
-    content: "";
-    position: fixed;
-    top:0; left:0; right:0; bottom:0;
-    background: rgba(0,0,0,0.5);
-    z-index: 0;
-  }
+body::before {
+  content:"";
+  position: fixed;
+  top:0; left:0; right:0; bottom:0;
+  background: rgba(0,0,0,0.5); /* overlay scuro */
+  z-index: 0;
+}
 
-  .container {
-    position: relative;
-    z-index: 1;
-    max-width: 600px;
-    margin: 40px auto;
-    padding: 16px;
-  }
+.container {
+  position: relative;
+  z-index: 1;
+  max-width: 600px;
+  margin: 50px auto;
+  padding: 16px;
+}
 
-  .card {
-    background: rgba(255,255,255,0.95);
-    border-radius: 10px;
-    padding: 20px 24px;
-    box-shadow: 0 6px 22px rgba(0,0,0,0.15);
-  }
+.card {
+  background: rgba(255,255,255,0.95);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
 
-  h2, h3 {
-    margin: 0 0 12px;
-    text-align: center;
-  }
+h2, h3 { text-align:center; margin: 0 0 12px; }
 
-  label {
-    display: block;
-    font-size: 0.9rem;
-    margin-bottom: 4px;
-    color: #333;
-  }
+label { display:block; font-size:0.9rem; margin-bottom:4px; color:#333; }
+input, select, textarea { width:100%; padding:10px; border-radius:6px; border:1px solid #ccc; margin-bottom:12px; font-size:1rem; }
 
-  input, select, textarea {
-    width: 100%;
-    padding: 10px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    margin-bottom: 12px;
-    font-size: 1rem;
-  }
+button {
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:8px;
+  background:#A43F3F;
+  color:white;
+  font-size:1.1rem;
+  font-weight:bold;
+  cursor:pointer;
+  transition: all 0.2s ease;
+}
 
-  button {
-    width: 100%;
-    padding: 10px;
-    border: none;
-    border-radius: 8px;
-    background: #A43F3F;
-    color: white;
-    font-size: 1rem;
-    font-weight: bold;
-    cursor: pointer;
-  }
+button:hover { background:#7a2b2b; transform: scale(1.03); }
+button:active { transform: scale(0.97); }
 
-  .small { font-size: 0.85rem; color: #555; }
-  .success { color: green; margin-top: 12px; }
-  .error { color: #b00020; margin-top: 12px; }
+.small { font-size:0.85rem; color:#555; }
+#msg { text-align:center; margin-top:10px; }
 
-  #msg { text-align: center; margin-top: 10px; }
+@media (max-width:600px) { .container { margin: 30px 16px; } }
 </style>
 </head>
 
 <body>
-  <div class="container">
-    <div class="card">
-      <h2>Ristorante Bar Gelatomania</h2>
-      <h3>Prenota il tuo tavolo</h3>
+<div class="container">
+  <div class="card">
+    <h2>Ristorante Bar Gelatomania</h2>
+    <h3>Prenota il tuo tavolo</h3>
 
-      <label>Nome <span style="color:red">*</span></label>
-      <input id="name" type="text" placeholder="Il tuo nome" required>
+    <label>Nome <span style="color:red">*</span></label>
+    <input id="name" type="text" placeholder="Il tuo nome" required>
 
-      <label>Telefono <span style="color:red">*</span></label>
-      <input id="phone" type="tel" placeholder="Numero di telefono" required>
+    <label>Telefono <span style="color:red">*</span></label>
+    <input id="phone" type="tel" placeholder="Numero di telefono" required>
 
-      <label>Numero adulti *</label>
-      <input id="adults" type="number" min="1" value="1" required>
+    <label>Numero adulti *</label>
+    <input id="adults" type="number" min="1" value="1" required>
 
-      <label>Numero bambini</label>
-      <input id="children" type="number" min="0" value="0">
+    <label>Numero bambini</label>
+    <input id="children" type="number" min="0" value="0">
 
-      <label>Area del tavolo</label>
-      <select id="area">
-        <option value="inside">Dentro</option>
-        <option value="outside">Fuori</option>
-      </select>
+    <label>Area del tavolo</label>
+    <select id="area">
+      <option value="inside">Dentro</option>
+      <option value="outside">Fuori</option>
+    </select>
 
-      <label>Data *</label>
-      <input id="date" type="date" required>
+    <label>Data *</label>
+    <input id="date" type="date" required>
 
-      <label>Orario (12:00 – 14:30) *</label>
-      <input id="time" type="time" min="12:00" max="14:30" required>
+    <label>Orario (12:00 – 14:30) *</label>
+    <input id="time" type="time" min="12:00" max="14:30" required>
 
-      <label>Note</label>
-      <textarea id="notes" placeholder="Eventuali note"></textarea>
+    <label>Note</label>
+    <textarea id="notes" placeholder="Eventuali note"></textarea>
 
-      <button id="bookBtn">Prenota</button>
-      <div id="msg" class="small"></div>
-    </div>
+    <button id="bookBtn">Prenota</button>
+    <div id="msg" class="small"></div>
   </div>
+</div>
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyDhkuWdU6n2kvitoaHyK0jlyYrPLR_2wQ4",
-      authDomain: "gelatomania-prenotazioni.firebaseapp.com",
-      projectId: "gelatomania-prenotazioni",
-      storageBucket: "gelatomania-prenotazioni.firebasestorage.app",
-      messagingSenderId: "1077584417614",
-      appId: "1:1077584417614:web:2dbf35b1f1c647c5ff041f",
-      measurementId: "G-N283TL911D"
-    };
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyDhkuWdU6n2kvitoaHyK0jlyYrPLR_2wQ4",
+  authDomain: "gelatomania-prenotazioni.firebaseapp.com",
+  projectId: "gelatomania-prenotazioni",
+  storageBucket: "gelatomania-prenotazioni.firebasestorage.app",
+  messagingSenderId: "1077584417614",
+  appId: "1:1077584417614:web:2dbf35b1f1c647c5ff041f",
+  measurementId: "G-N283TL911D"
+};
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
-    const bookBtn = document.getElementById('bookBtn');
-    const msgEl = document.getElementById('msg');
+const bookBtn = document.getElementById('bookBtn');
+const msgEl = document.getElementById('msg');
 
-    function showMsg(text, isError=false) {
-      msgEl.textContent = text;
-      msgEl.className = isError ? 'error' : 'success';
-      setTimeout(() => {
-        msgEl.textContent = '';
-        msgEl.className = 'small';
-      }, 5000);
-    }
+function showMsg(text, isError=false) {
+  msgEl.textContent = text;
+  msgEl.className = isError ? 'error' : 'success';
+  setTimeout(()=>{ msgEl.textContent=''; msgEl.className='small'; }, 5000);
+}
 
-    bookBtn.addEventListener('click', async () => {
-      const name = document.getElementById('name').value.trim();
-      const phone = document.getElementById('phone').value.trim();
-      const adults = parseInt(document.getElementById('adults').value) || 0;
-      const children = parseInt(document.getElementById('children').value) || 0;
-      const area = document.getElementById('area').value;
-      const date = document.getElementById('date').value;
-      const time = document.getElementById('time').value;
-      const notes = document.getElementById('notes').value.trim();
+bookBtn.addEventListener('click', async () => {
+  const name = document.getElementById('name').value.trim();
+  const phone = document.getElementById('phone').value.trim();
+  const adults = parseInt(document.getElementById('adults').value) || 0;
+  const children = parseInt(document.getElementById('children').value) || 0;
+  const area = document.getElementById('area').value;
+  const date = document.getElementById('date').value;
+  const time = document.getElementById('time').value;
+  const notes = document.getElementById('notes').value.trim();
 
-      if (!name || !phone || !date || !time || !adults) {
-        showMsg('Compila tutti i campi obbligatori (*)', true);
-        return;
-      }
+  if (!name || !phone || !date || !time || !adults) { showMsg('Compila tutti i campi obbligatori (*)', true); return; }
+  if (time < "12:00" || time > "14:30") { showMsg('Orario non valido: scegli tra 12:00 e 14:30', true); return; }
 
-      // Verifica fascia oraria
-      if (time < "12:00" || time > "14:30") {
-        showMsg('Orario non valido: scegli tra 12:00 e 14:30', true);
-        return;
-      }
-
-      try {
-        await db.collection('bookings').add({
-          name, phone, adults, children, area, date, time, notes,
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        showMsg('Prenotazione inviata con successo!');
-        document.getElementById('name').value = '';
-        document.getElementById('phone').value = '';
-        document.getElementById('adults').value = 1;
-        document.getElementById('children').value = 0;
-        document.getElementById('notes').value = '';
-      } catch (err) {
-        console.error(err);
-        showMsg('Errore durante l\'invio della prenotazione', true);
-      }
-    });
-  </script>
+  try {
+    await db.collection('bookings').add({ name, phone, adults, children, area, date, time, notes, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+    showMsg('Prenotazione inviata con successo!');
+    document.getElementById('name').value='';
+    document.getElementById('phone').value='';
+    document.getElementById('adults').value=1;
+    document.getElementById('children').value=0;
+    document.getElementById('notes').value='';
+  } catch(err){ console.error(err); showMsg('Errore durante l\'invio della prenotazione', true); }
+});
+</script>
 </body>
 </html>
