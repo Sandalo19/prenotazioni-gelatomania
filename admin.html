@@ -3,57 +3,142 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pannello Admin - Ristorante Bar Gelatomania</title>
+<title>Admin — Ristorante Bar Gelatomania</title>
 <style>
-:root{--bg:#fafafa;--card:#fff;--accent:#A43F3F;--muted:#666}
-body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);margin:0;color:#111}
-.container{max-width:980px;margin:20px auto;padding:16px}
-.card{background:var(--card);border-radius:10px;padding:16px;box-shadow:0 6px 22px rgba(0,0,0,0.06)}
-input{padding:8px;border-radius:6px;border:1px solid #e6e6e6;width:100%}
-.btn{padding:8px 12px;border-radius:8px;background:var(--accent);color:white;border:0;cursor:pointer}
-.btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
-.row{display:flex;gap:8px}
-.small{font-size:.9rem;color:var(--muted)}
-.res{border:1px solid #f0f0f0;padding:10px;border-radius:8px;margin-bottom:8px}
-.topbar{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px}
+body {
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  background: #f5f5f5;
+  margin: 0;
+  color: #111;
+}
+
+.container {
+  max-width: 1000px;
+  margin: 20px auto;
+  padding: 16px;
+}
+
+.card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  margin-bottom: 16px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.topbar h2 {
+  margin: 0;
+}
+
+.btn {
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: #A43F3F;
+  color: white;
+  border: none;
+  cursor: pointer;
+  margin-left: 8px;
+  font-weight: bold;
+  transition: background 0.2s;
+}
+
+.btn:hover {
+  background: #7a2b2b;
+}
+
+.btn.ghost {
+  background: transparent;
+  border: 1px solid #A43F3F;
+  color: #A43F3F;
+}
+
+.btn.ghost:hover {
+  background: #A43F3F;
+  color: white;
+}
+
+.reservation {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  align-items: center;
+  padding: 12px;
+  border-left: 5px solid #A43F3F;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  background: #fafafa;
+}
+
+.reservation.outside { border-left-color: #4CAF50; }
+
+.reservation div {
+  margin-bottom: 6px;
+}
+
+.small { font-size: 0.85rem; color: #555; }
+
+.row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+
+#list {
+  margin-top: 16px;
+}
+
+input, select, button {
+  font-family: inherit;
+}
+
+@media (max-width: 600px) {
+  .reservation { flex-direction: column; align-items: flex-start; }
+  .topbar { flex-direction: column; align-items: flex-start; gap: 8px; }
+}
 </style>
 </head>
 <body>
+
 <div class="container">
-  <div class="card">
+  <div class="card topbar">
+    <h2>Pannello Admin — Ristorante Bar Gelatomania</h2>
+    <div>
+      <button id="signOut" class="btn ghost" style="display:none">Esci</button>
+    </div>
+  </div>
+
+  <div id="authSection" class="card">
+    <h3>Login amministratore</h3>
+    <label>Email</label>
+    <input id="email" type="email" placeholder="admin@esempio.it">
+    <label>Password</label>
+    <input id="password" type="password" placeholder="password">
+    <div class="row">
+      <button id="signIn" class="btn">Accedi</button>
+    </div>
+    <div id="authMsg" class="small"></div>
+  </div>
+
+  <div id="adminSection" style="display:none">
     <div class="topbar">
-      <h2>Pannello Admin — Ristorante Bar Gelatomania</h2>
-      <div>
-        <button id="signOut" class="btn ghost" style="display:none">Esci</button>
+      <div class="small">Sei loggato come <span id="userEmail"></span></div>
+      <div class="row">
+        <button id="refresh" class="btn ghost">Aggiorna</button>
+        <button id="exportCsv" class="btn ghost">Esporta CSV</button>
+        <button id="deleteAll" class="btn ghost">Elimina tutte</button>
       </div>
     </div>
-
-    <div id="authSection">
-      <h3>Login amministratore</h3>
-      <div style="max-width:420px">
-        <label>Email</label>
-        <input id="email" type="email" placeholder="admin@esempio.it">
-        <label>Password</label>
-        <input id="password" type="password" placeholder="password">
-        <div style="display:flex;gap:8px;margin-top:8px">
-          <button id="signIn" class="btn">Accedi</button>
-        </div>
-        <div id="authMsg" class="small" style="margin-top:8px"></div>
-      </div>
-    </div>
-
-    <div id="adminSection" style="display:none">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <div class="small">Sei loggato come <span id="userEmail"></span></div>
-        <div>
-          <button id="refresh" class="btn ghost">Aggiorna</button>
-          <button id="exportCsv" class="btn ghost">Esporta CSV</button>
-          <button id="deleteAll" class="btn ghost">Elimina tutte</button>
-        </div>
-      </div>
-
-      <div id="list" style="margin-top:12px"></div>
-    </div>
+    <div id="list"></div>
   </div>
 </div>
 
@@ -63,150 +148,134 @@ input{padding:8px;border-radius:6px;border:1px solid #e6e6e6;width:100%}
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
 <script>
-  // ======= FIREBASE CONFIG INSERITA =======
-  const firebaseConfig = {
-    apiKey: "AIzaSyDhkuWdU6n2kvitoaHyK0jlyYrPLR_2wQ4",
-    authDomain: "gelatomania-prenotazioni.firebaseapp.com",
-    projectId: "gelatomania-prenotazioni",
-    storageBucket: "gelatomania-prenotazioni.firebasestorage.app",
-    messagingSenderId: "1077584417614",
-    appId: "1:1077584417614:web:2dbf35b1f1c647c5ff041f",
-    measurementId: "G-N283TL911D"
-  };
-  // ==========================================
+const firebaseConfig = {
+  apiKey: "AIzaSyDhkuWdU6n2kvitoaHyK0jlyYrPLR_2wQ4",
+  authDomain: "gelatomania-prenotazioni.firebaseapp.com",
+  projectId: "gelatomania-prenotazioni",
+  storageBucket: "gelatomania-prenotazioni.firebasestorage.app",
+  messagingSenderId: "1077584417614",
+  appId: "1:1077584417614:web:2dbf35b1f1c647c5ff041f",
+  measurementId: "G-N283TL911D"
+};
 
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-  const db = firebase.firestore();
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
 
-  // DOM
-  const signInBtn = document.getElementById('signIn');
-  const signOutBtn = document.getElementById('signOut');
-  const emailIn = document.getElementById('email');
-  const passIn = document.getElementById('password');
-  const authMsg = document.getElementById('authMsg');
-  const authSection = document.getElementById('authSection');
-  const adminSection = document.getElementById('adminSection');
-  const userEmail = document.getElementById('userEmail');
-  const listEl = document.getElementById('list');
+// DOM
+const signInBtn = document.getElementById('signIn');
+const signOutBtn = document.getElementById('signOut');
+const emailIn = document.getElementById('email');
+const passIn = document.getElementById('password');
+const authMsg = document.getElementById('authMsg');
+const authSection = document.getElementById('authSection');
+const adminSection = document.getElementById('adminSection');
+const userEmail = document.getElementById('userEmail');
+const listEl = document.getElementById('list');
 
-  let unsubscribeBookings = null;
+let unsubscribeBookings = null;
 
-  function showAuthMsg(t, err=false){ authMsg.textContent = t; authMsg.style.color = err ? '#b00020' : 'green'; setTimeout(()=>authMsg.textContent='',4000); }
+function showAuthMsg(t, err=false){ authMsg.textContent = t; authMsg.style.color = err ? '#b00020' : 'green'; setTimeout(()=>authMsg.textContent='',4000); }
 
-  signInBtn.addEventListener('click', async ()=>{
-    const email = emailIn.value.trim();
-    const pw = passIn.value;
-    if(!email || !pw){ showAuthMsg('Inserisci email e password', true); return; }
-    try {
-      await auth.signInWithEmailAndPassword(email, pw);
-    } catch(err){
-      console.error(err);
-      showAuthMsg('Errore login: ' + (err.message || err.code), true);
+signInBtn.addEventListener('click', async ()=>{
+  const email = emailIn.value.trim();
+  const pw = passIn.value;
+  if(!email || !pw){ showAuthMsg('Inserisci email e password', true); return; }
+  try { await auth.signInWithEmailAndPassword(email, pw); } 
+  catch(err){ console.error(err); showAuthMsg('Errore login: ' + (err.message || err.code), true); }
+});
+
+signOutBtn.addEventListener('click', ()=>auth.signOut());
+
+auth.onAuthStateChanged(async (user)=>{
+  if(user){
+    const adminDoc = await db.collection('admins').doc(user.uid).get();
+    if(!adminDoc.exists){
+      showAuthMsg('Non sei autorizzato come admin.', true);
+      await auth.signOut();
+      return;
     }
-  });
-
-  signOutBtn.addEventListener('click', ()=>auth.signOut());
-
-  auth.onAuthStateChanged(async (user)=>{
-    if(user){
-      const adminDoc = await db.collection('admins').doc(user.uid).get();
-      if(!adminDoc.exists){
-        showAuthMsg('Non sei autorizzato come admin.', true);
-        await auth.signOut();
-        return;
-      }
-      authSection.style.display = 'none';
-      adminSection.style.display = 'block';
-      signOutBtn.style.display = 'inline-block';
-      userEmail.textContent = user.email;
-      attachBookingsListener();
-    } else {
-      authSection.style.display = 'block';
-      adminSection.style.display = 'none';
-      signOutBtn.style.display = 'none';
-      userEmail.textContent = '';
-      if(unsubscribeBookings) { unsubscribeBookings(); unsubscribeBookings = null; }
-      listEl.innerHTML = '';
-    }
-  });
-
-  function attachBookingsListener(){
-    if(unsubscribeBookings) unsubscribeBookings();
-    unsubscribeBookings = db.collection('bookings').orderBy('date').orderBy('time')
-      .onSnapshot(snapshot=>{
-        const items = [];
-        snapshot.forEach(doc=>{
-          items.push({ id: doc.id, ...doc.data() });
-        });
-        renderList(items);
-      }, err => {
-        console.error('snapshot error', err);
-      });
-  }
-
-  function renderList(items){
+    authSection.style.display = 'none';
+    adminSection.style.display = 'block';
+    signOutBtn.style.display = 'inline-block';
+    userEmail.textContent = user.email;
+    attachBookingsListener();
+  } else {
+    authSection.style.display = 'block';
+    adminSection.style.display = 'none';
+    signOutBtn.style.display = 'none';
+    userEmail.textContent = '';
+    if(unsubscribeBookings){ unsubscribeBookings(); unsubscribeBookings=null; }
     listEl.innerHTML = '';
-    if(!items.length) { listEl.innerHTML = '<div class="small">Nessuna prenotazione presente.</div>'; return; }
-    items.forEach(it=>{
-      const d = document.createElement('div');
-      d.className = 'res';
-      const created = it.createdAt && it.createdAt.toDate ? it.createdAt.toDate().toLocaleString() : '';
-      d.innerHTML = `
-        <div style="display:flex;justify-content:space-between">
-          <div><strong>${escapeHtml(it.name)}</strong> — ${escapeHtml(it.phone)}</div>
-          <div class="small">${escapeHtml(it.date)} ${escapeHtml(it.time)}</div>
-        </div>
-        <div class="small">${it.adults} adulti ${it.children? '· ' + it.children + ' bambini': ''} · ${it.area=='inside'?'Dentro':'Fuori'}</div>
-        ${it.notes? '<div class="small">Note: ' + escapeHtml(it.notes) + '</div>': ''}
-        <div class="row" style="margin-top:8px">
-          <button class="btn ghost" data-action="delete" data-id="${it.id}">Elimina</button>
-        </div>
-        <div class="small" style="margin-top:6px">Inserita: ${escapeHtml(created)}</div>
-      `;
-      listEl.appendChild(d);
-    });
   }
+});
 
-  listEl.addEventListener('click', async (e)=>{
-    const btn = e.target.closest('button');
-    if(!btn) return;
-    const action = btn.dataset.action;
-    const id = btn.dataset.id;
-    if(action === 'delete'){
-      if(!confirm('Eliminare questa prenotazione?')) return;
-      try {
-        await db.collection('bookings').doc(id).delete();
-      } catch(err){ console.error(err); alert('Errore eliminazione'); }
-    }
+function attachBookingsListener(){
+  if(unsubscribeBookings) unsubscribeBookings();
+  unsubscribeBookings = db.collection('bookings').orderBy('date').orderBy('time')
+    .onSnapshot(snapshot=>{
+      const items = [];
+      snapshot.forEach(doc=>items.push({ id: doc.id, ...doc.data() }));
+      renderList(items);
+    }, err => { console.error('snapshot error', err); });
+}
+
+function renderList(items){
+  listEl.innerHTML = '';
+  if(!items.length){ listEl.innerHTML = '<div class="small">Nessuna prenotazione presente.</div>'; return; }
+  items.forEach(it=>{
+    const d = document.createElement('div');
+    d.className = 'reservation ' + (it.area==='outside'?'outside':'');
+    const created = it.createdAt && it.createdAt.toDate ? it.createdAt.toDate().toLocaleString() : '';
+    d.innerHTML = `
+      <div><strong>${escapeHtml(it.name)}</strong> — ${escapeHtml(it.phone)}</div>
+      <div class="small">${escapeHtml(it.date)} ${escapeHtml(it.time)} · ${it.adults} adulti ${it.children? '· ' + it.children + ' bambini':''} · ${it.area==='inside'?'Dentro':'Fuori'}</div>
+      ${it.notes?'<div class="small">Note: '+escapeHtml(it.notes)+'</div>':''}
+      <div class="row">
+        <button class="btn ghost" data-action="delete" data-id="${it.id}">Elimina</button>
+      </div>
+      <div class="small">Inserita: ${escapeHtml(created)}</div>
+    `;
+    listEl.appendChild(d);
   });
+}
 
-  document.getElementById('refresh').addEventListener('click', ()=>{
-    if(unsubscribeBookings) { unsubscribeBookings(); unsubscribeBookings = null; attachBookingsListener(); }
+listEl.addEventListener('click', async (e)=>{
+  const btn = e.target.closest('button');
+  if(!btn) return;
+  const action = btn.dataset.action;
+  const id = btn.dataset.id;
+  if(action==='delete'){
+    if(!confirm('Eliminare questa prenotazione?')) return;
+    try { await db.collection('bookings').doc(id).delete(); } 
+    catch(err){ console.error(err); alert('Errore eliminazione'); }
+  }
+});
+
+document.getElementById('refresh').addEventListener('click', ()=>{ if(unsubscribeBookings){ unsubscribeBookings(); unsubscribeBookings=null; attachBookingsListener(); } });
+
+document.getElementById('exportCsv').addEventListener('click', async ()=>{
+  const snap = await db.collection('bookings').orderBy('date').orderBy('time').get();
+  if(snap.empty){ alert('Nessuna prenotazione da esportare'); return; }
+  const rows = [['ID','Nome','Telefono','Data','Ora','Adulti','Bambini','Area','Note','Creato']];
+  snap.forEach(doc=>{
+    const r = doc.data();
+    const created = r.createdAt && r.createdAt.toDate ? r.createdAt.toDate().toISOString() : '';
+    rows.push([doc.id, r.name, r.phone, r.date, r.time, r.adults, r.children, r.area, r.notes, created]);
   });
+  const csv = rows.map(r => r.map(c => `"${String(c||'').replace(/"/g,'""')}"`).join(',')).join('\r\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download='prenotazioni_gelatomania.csv'; a.click();
+});
 
-  document.getElementById('exportCsv').addEventListener('click', async ()=>{
-    const snap = await db.collection('bookings').orderBy('date').orderBy('time').get();
-    if(snap.empty){ alert('Nessuna prenotazione da esportare'); return; }
-    const rows = [['ID','Nome','Telefono','Data','Ora','Adulti','Bambini','Area','Note','Creato']];
-    snap.forEach(doc=>{
-      const r = doc.data();
-      const created = r.createdAt && r.createdAt.toDate ? r.createdAt.toDate().toISOString() : '';
-      rows.push([doc.id, r.name, r.phone, r.date, r.time, r.adults, r.children, r.area, r.notes, created]);
-    });
-    const csv = rows.map(r => r.map(c => `"${String(c||'').replace(/"/g,'""')}"`).join(',')).join('\r\n');
-    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download='prenotazioni_gelatomania.csv'; a.click();
-  });
+document.getElementById('deleteAll').addEventListener('click', async ()=>{
+  if(!confirm('Eliminare tutte le prenotazioni (azione irreversibile)?')) return;
+  const snap = await db.collection('bookings').get();
+  const batch = db.batch();
+  snap.forEach(doc => batch.delete(doc.ref));
+  await batch.commit();
+});
 
-  document.getElementById('deleteAll').addEventListener('click', async ()=>{
-    if(!confirm('Eliminare tutte le prenotazioni (azione irreversibile)?')) return;
-    const snap = await db.collection('bookings').get();
-    const batch = db.batch();
-    snap.forEach(doc => batch.delete(doc.ref));
-    await batch.commit();
-  });
-
-  function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 </script>
 </body>
 </html>
