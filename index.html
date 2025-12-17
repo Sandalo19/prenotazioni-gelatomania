@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ristorante Bar Gelatomania - Prenotazioni</title>
+
+<!-- Font Awesome per icone -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-o8vG9lQbdO3uqbsyi5iMZJktkz2n+iX6h5fPLoX91PRv5xnlHkgqIQo6jrshNTsXYi8vJ6P1lHq+KMT5kzI2BQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
 <style>
 * { box-sizing: border-box; }
 
@@ -98,9 +102,16 @@ button:active { transform: scale(0.97); }
 .why-us h3 { margin-bottom:12px; }
 .why-us p { margin:6px 0; font-size:1rem; }
 
-.info-restaurant { text-align:center; margin-top:20px; color:white; font-size:0.95rem; }
+.info-restaurant { 
+  text-align:center; 
+  margin-top:20px; 
+  color:white; 
+  font-size:0.95rem; 
+}
 
-.info-restaurant a { color:white; text-decoration:underline; }
+.info-restaurant p { margin:6px 4px; }
+
+.info-restaurant i { margin-right:6px; color:#FFD700; }
 
 @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
 
@@ -145,13 +156,13 @@ button:active { transform: scale(0.97); }
     <div id="msg" class="small"><span class="checkmark" id="checkmark">✔</span></div>
   </div>
 
-  <!-- Sezione informazioni ristorante/bar -->
+  <!-- Sezione informazioni ristorante/bar con icone -->
   <div class="info-restaurant">
-    <p>📍 <a href="https://www.google.com/maps/dir//Corso+Umberto+I,+77,+96100+Siracusa+SR/@37.1494916,15.1806428,14z/data=!3m1!4b1!4m8!4m7!1m0!1m5!1m1!1s0x1313ce9fd57e6e1d:0xfeaeb9406f2109a6!2m2!1d15.286934!2d37.0657725?entry=ttu&g_ep=EgoyMDI1MTIwOS4wIKXMDSoASAFQAw%3D%3D" target="_blank">Corso Umberto I, 77, 96100 Siracusa SR</a></p>
-    <p>📞 <a href="tel:+3909311960259">0931 196 0259</a></p>
-    <p>🕒 Orari:</p>
-    <p>☕ Bar: 7:30 – 20:00</p>
-    <p>🍽️ Ristorante: 12:00 – 14:30</p>
+    <p><i class="fas fa-map-marker-alt"></i> <a href="https://www.google.com/maps/dir//Corso+Umberto+I,+77,+96100+Siracusa+SR/@37.1494916,15.1806428,14z/data=!3m1!4b1!4m8!4m7!1m0!1m5!1m1!1s0x1313ce9fd57e6e1d:0xfeaeb9406f2109a6!2m2!1d15.286934!2d37.0657725?entry=ttu&g_ep=EgoyMDI1MTIwOS4wIKXMDSoASAFQAw%3D%3D" target="_blank">Corso Umberto I, 77, 96100 Siracusa SR</a></p>
+    <p><i class="fas fa-phone"></i> <a href="tel:+3909311960259">0931 196 0259</a></p>
+    <p><i class="fas fa-clock"></i> Orari:</p>
+    <p><i class="fas fa-mug-hot"></i> Bar: 7:30 – 20:00</p>
+    <p><i class="fas fa-utensils"></i> Ristorante: 12:00 – 14:30</p>
   </div>
 
   <div class="why-us">
