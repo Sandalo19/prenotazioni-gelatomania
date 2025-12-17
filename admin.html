@@ -12,99 +12,30 @@ body {
   color: #111;
 }
 
-.container {
-  max-width: 1000px;
-  margin: 20px auto;
-  padding: 16px;
-}
+.container { max-width: 1000px; margin: 20px auto; padding: 16px; }
+.card { background: #fff; border-radius: 12px; padding: 16px; box-shadow: 0 6px 20px rgba(0,0,0,0.08); margin-bottom: 16px; transition: transform 0.2s, box-shadow 0.2s; }
+.card:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,0.12); }
 
-.card {
-  background: #fff;
-  border-radius: 12px;
-  padding: 16px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
-  margin-bottom: 16px;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
+.topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+.topbar h2 { margin: 0; }
 
-.card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(0,0,0,0.12);
-}
+.btn { padding: 8px 14px; border-radius: 8px; background: #A43F3F; color: white; border: none; cursor: pointer; margin-left: 8px; font-weight: bold; transition: background 0.2s; }
+.btn:hover { background: #7a2b2b; }
+.btn.ghost { background: transparent; border: 1px solid #A43F3F; color: #A43F3F; }
+.btn.ghost:hover { background: #A43F3F; color: white; }
 
-.topbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
-}
+.filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.filters select, .filters input { padding: 6px; border-radius: 6px; border: 1px solid #ccc; }
 
-.topbar h2 {
-  margin: 0;
-}
-
-.btn {
-  padding: 8px 14px;
-  border-radius: 8px;
-  background: #A43F3F;
-  color: white;
-  border: none;
-  cursor: pointer;
-  margin-left: 8px;
-  font-weight: bold;
-  transition: background 0.2s;
-}
-
-.btn:hover {
-  background: #7a2b2b;
-}
-
-.btn.ghost {
-  background: transparent;
-  border: 1px solid #A43F3F;
-  color: #A43F3F;
-}
-
-.btn.ghost:hover {
-  background: #A43F3F;
-  color: white;
-}
-
-.reservation {
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  align-items: center;
-  padding: 12px;
-  border-left: 5px solid #A43F3F;
-  border-radius: 8px;
-  margin-bottom: 12px;
-  background: #fafafa;
-}
-
+.reservation { display: flex; justify-content: space-between; flex-wrap: wrap; align-items: center; padding: 12px; border-left: 5px solid #A43F3F; border-radius: 8px; margin-bottom: 12px; background: #fafafa; }
 .reservation.outside { border-left-color: #4CAF50; }
-
-.reservation div {
-  margin-bottom: 6px;
-}
+.reservation div { margin-bottom: 6px; }
 
 .small { font-size: 0.85rem; color: #555; }
-
 .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+#list { margin-top: 16px; }
 
-#list {
-  margin-top: 16px;
-}
-
-input, select, button {
-  font-family: inherit;
-}
-
-@media (max-width: 600px) {
-  .reservation { flex-direction: column; align-items: flex-start; }
-  .topbar { flex-direction: column; align-items: flex-start; gap: 8px; }
-}
+@media (max-width: 600px) { .reservation { flex-direction: column; align-items: flex-start; } .topbar { flex-direction: column; align-items: flex-start; gap: 8px; } }
 </style>
 </head>
 <body>
@@ -138,6 +69,17 @@ input, select, button {
         <button id="deleteAll" class="btn ghost">Elimina tutte</button>
       </div>
     </div>
+
+    <div class="filters card">
+      <input type="text" id="searchName" placeholder="Cerca per nome o telefono">
+      <input type="date" id="filterDate">
+      <select id="filterArea">
+        <option value="">Tutti</option>
+        <option value="inside">Dentro</option>
+        <option value="outside">Fuori</option>
+      </select>
+    </div>
+
     <div id="list"></div>
   </div>
 </div>
@@ -173,7 +115,11 @@ const adminSection = document.getElementById('adminSection');
 const userEmail = document.getElementById('userEmail');
 const listEl = document.getElementById('list');
 
-let unsubscribeBookings = null;
+const searchName = document.getElementById('searchName');
+const filterDate = document.getElementById('filterDate');
+const filterArea = document.getElementById('filterArea');
+
+let bookingsData = [];
 
 function showAuthMsg(t, err=false){ authMsg.textContent = t; authMsg.style.color = err ? '#b00020' : 'green'; setTimeout(()=>authMsg.textContent='',4000); }
 
@@ -190,11 +136,7 @@ signOutBtn.addEventListener('click', ()=>auth.signOut());
 auth.onAuthStateChanged(async (user)=>{
   if(user){
     const adminDoc = await db.collection('admins').doc(user.uid).get();
-    if(!adminDoc.exists){
-      showAuthMsg('Non sei autorizzato come admin.', true);
-      await auth.signOut();
-      return;
-    }
+    if(!adminDoc.exists){ showAuthMsg('Non sei autorizzato come admin.', true); await auth.signOut(); return; }
     authSection.style.display = 'none';
     adminSection.style.display = 'block';
     signOutBtn.style.display = 'inline-block';
@@ -205,25 +147,33 @@ auth.onAuthStateChanged(async (user)=>{
     adminSection.style.display = 'none';
     signOutBtn.style.display = 'none';
     userEmail.textContent = '';
-    if(unsubscribeBookings){ unsubscribeBookings(); unsubscribeBookings=null; }
     listEl.innerHTML = '';
   }
 });
 
 function attachBookingsListener(){
-  if(unsubscribeBookings) unsubscribeBookings();
-  unsubscribeBookings = db.collection('bookings').orderBy('date').orderBy('time')
-    .onSnapshot(snapshot=>{
-      const items = [];
-      snapshot.forEach(doc=>items.push({ id: doc.id, ...doc.data() }));
-      renderList(items);
-    }, err => { console.error('snapshot error', err); });
+  db.collection('bookings').orderBy('date').orderBy('time').onSnapshot(snapshot=>{
+    bookingsData = [];
+    snapshot.forEach(doc=>bookingsData.push({id: doc.id, ...doc.data()}));
+    renderList();
+  });
 }
 
-function renderList(items){
+function renderList(){
+  const search = searchName.value.toLowerCase();
+  const dateFilter = filterDate.value;
+  const areaFilter = filterArea.value;
+
   listEl.innerHTML = '';
-  if(!items.length){ listEl.innerHTML = '<div class="small">Nessuna prenotazione presente.</div>'; return; }
-  items.forEach(it=>{
+  const filtered = bookingsData.filter(b=>{
+    return (!search || b.name.toLowerCase().includes(search) || b.phone.includes(search)) &&
+           (!dateFilter || b.date===dateFilter) &&
+           (!areaFilter || b.area===areaFilter);
+  });
+
+  if(!filtered.length){ listEl.innerHTML = '<div class="small">Nessuna prenotazione presente.</div>'; return; }
+
+  filtered.forEach(it=>{
     const d = document.createElement('div');
     d.className = 'reservation ' + (it.area==='outside'?'outside':'');
     const created = it.createdAt && it.createdAt.toDate ? it.createdAt.toDate().toLocaleString() : '';
@@ -240,6 +190,11 @@ function renderList(items){
   });
 }
 
+// Filtri live
+searchName.addEventListener('input', renderList);
+filterDate.addEventListener('change', renderList);
+filterArea.addEventListener('change', renderList);
+
 listEl.addEventListener('click', async (e)=>{
   const btn = e.target.closest('button');
   if(!btn) return;
@@ -252,8 +207,7 @@ listEl.addEventListener('click', async (e)=>{
   }
 });
 
-document.getElementById('refresh').addEventListener('click', ()=>{ if(unsubscribeBookings){ unsubscribeBookings(); unsubscribeBookings=null; attachBookingsListener(); } });
-
+document.getElementById('refresh').addEventListener('click', attachBookingsListener);
 document.getElementById('exportCsv').addEventListener('click', async ()=>{
   const snap = await db.collection('bookings').orderBy('date').orderBy('time').get();
   if(snap.empty){ alert('Nessuna prenotazione da esportare'); return; }
