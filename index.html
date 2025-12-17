@@ -19,7 +19,7 @@ body::before {
   content:"";
   position: fixed;
   top:0; left:0; right:0; bottom:0;
-  background: rgba(0,0,0,0.5); /* overlay scuro */
+  background: rgba(0,0,0,0.5);
   z-index: 0;
 }
 
@@ -29,6 +29,7 @@ body::before {
   max-width: 600px;
   margin: 50px auto;
   padding: 16px;
+  animation: fadeIn 1s ease;
 }
 
 .card {
@@ -36,7 +37,10 @@ body::before {
   border-radius: 12px;
   padding: 24px;
   box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+  transition: transform 0.2s;
 }
+
+.card:hover { transform: translateY(-2px); }
 
 h2, h3 { text-align:center; margin: 0 0 12px; }
 
@@ -44,6 +48,8 @@ label { display:block; font-size:0.9rem; margin-bottom:4px; color:#333; }
 input, select, textarea { width:100%; padding:10px; border-radius:6px; border:1px solid #ccc; margin-bottom:12px; font-size:1rem; }
 
 button {
+  position: relative;
+  overflow: hidden;
   width:100%;
   padding:12px;
   border:none;
@@ -59,10 +65,42 @@ button {
 button:hover { background:#7a2b2b; transform: scale(1.03); }
 button:active { transform: scale(0.97); }
 
-.small { font-size:0.85rem; color:#555; }
-#msg { text-align:center; margin-top:10px; }
+/* effetto onda */
+.ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.7);
+  transform: scale(0);
+  animation: ripple-animation 0.6s linear;
+  pointer-events: none;
+}
 
-@media (max-width:600px) { .container { margin: 30px 16px; } }
+@keyframes ripple-animation {
+  to { transform: scale(4); opacity: 0; }
+}
+
+.small { font-size:0.85rem; color:#555; text-align:center; }
+#msg { margin-top:10px; position:relative; min-height:24px; }
+
+.checkmark {
+  display:inline-block;
+  color: green;
+  font-size: 1.5rem;
+  margin-left:8px;
+  opacity:0;
+  transform: scale(0);
+  transition: all 0.4s ease;
+}
+
+.show { opacity:1; transform: scale(1); }
+
+.why-us { text-align:center; margin-top:24px; color:white; }
+.why-us h3 { margin-bottom:12px; }
+.why-us p { margin:6px 0; font-size:1rem; }
+
+@keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
+
+@media (max-width:600px) { .container { margin:30px 16px; } }
 </style>
 </head>
 
@@ -100,7 +138,14 @@ button:active { transform: scale(0.97); }
     <textarea id="notes" placeholder="Eventuali note"></textarea>
 
     <button id="bookBtn">Prenota</button>
-    <div id="msg" class="small"></div>
+    <div id="msg" class="small"><span class="checkmark" id="checkmark">✔</span></div>
+  </div>
+
+  <div class="why-us">
+    <h3>Perché sceglierci?</h3>
+    <p>🍨 Specialità gelati e dolci artigianali</p>
+    <p>🏠 Ambiente accogliente e familiare</p>
+    <p>👨‍👩‍👧‍👦 Perfetto per gruppi e famiglie</p>
   </div>
 </div>
 
@@ -123,14 +168,29 @@ const db = firebase.firestore();
 
 const bookBtn = document.getElementById('bookBtn');
 const msgEl = document.getElementById('msg');
+const checkmark = document.getElementById('checkmark');
 
 function showMsg(text, isError=false) {
-  msgEl.textContent = text;
-  msgEl.className = isError ? 'error' : 'success';
-  setTimeout(()=>{ msgEl.textContent=''; msgEl.className='small'; }, 5000);
+  msgEl.style.color = isError ? 'red' : 'green';
+  msgEl.firstChild.nodeValue = text;
+  if(!isError){
+    checkmark.classList.add('show');
+    setTimeout(()=>checkmark.classList.remove('show'),2000);
+  }
+  setTimeout(()=>msgEl.firstChild.nodeValue='',5000);
 }
 
-bookBtn.addEventListener('click', async () => {
+bookBtn.addEventListener('click', async (e) => {
+  // Animazione onda
+  const ripple = document.createElement('span');
+  ripple.className = 'ripple';
+  const rect = bookBtn.getBoundingClientRect();
+  ripple.style.left = (e.clientX - rect.left) + 'px';
+  ripple.style.top = (e.clientY - rect.top) + 'px';
+  bookBtn.appendChild(ripple);
+  setTimeout(()=>ripple.remove(), 600);
+
+  // Salvataggio prenotazione
   const name = document.getElementById('name').value.trim();
   const phone = document.getElementById('phone').value.trim();
   const adults = parseInt(document.getElementById('adults').value) || 0;
