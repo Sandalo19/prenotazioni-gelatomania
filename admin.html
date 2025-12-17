@@ -1,21 +1,21 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="it">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Admin — Prenotazioni Gelatomania</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pannello Admin - Ristorante Bar Gelatomania</title>
 <style>
-  :root{--bg:#fafafa;--card:#fff;--accent:#A43F3F;--muted:#666}
-  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);margin:0;color:#111}
-  .container{max-width:980px;margin:20px auto;padding:16px}
-  .card{background:var(--card);border-radius:10px;padding:16px;box-shadow:0 6px 22px rgba(0,0,0,0.06)}
-  input{padding:8px;border-radius:6px;border:1px solid #e6e6e6;width:100%}
-  .btn{padding:8px 12px;border-radius:8px;background:var(--accent);color:white;border:0;cursor:pointer}
-  .btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
-  .row{display:flex;gap:8px}
-  .small{font-size:.9rem;color:var(--muted)}
-  .res{border:1px solid #f0f0f0;padding:10px;border-radius:8px;margin-bottom:8px}
-  .topbar{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px}
+:root{--bg:#fafafa;--card:#fff;--accent:#A43F3F;--muted:#666}
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);margin:0;color:#111}
+.container{max-width:980px;margin:20px auto;padding:16px}
+.card{background:var(--card);border-radius:10px;padding:16px;box-shadow:0 6px 22px rgba(0,0,0,0.06)}
+input{padding:8px;border-radius:6px;border:1px solid #e6e6e6;width:100%}
+.btn{padding:8px 12px;border-radius:8px;background:var(--accent);color:white;border:0;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+.row{display:flex;gap:8px}
+.small{font-size:.9rem;color:var(--muted)}
+.res{border:1px solid #f0f0f0;padding:10px;border-radius:8px;margin-bottom:8px}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px}
 </style>
 </head>
 <body>
@@ -63,8 +63,8 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
 <script>
-  // ======= INSERISCI QUI LA TUA FIREBASE CONFIG (stessa del index.html) =======
-const firebaseConfig = {
+  // ======= FIREBASE CONFIG INSERITA =======
+  const firebaseConfig = {
     apiKey: "AIzaSyDhkuWdU6n2kvitoaHyK0jlyYrPLR_2wQ4",
     authDomain: "gelatomania-prenotazioni.firebaseapp.com",
     projectId: "gelatomania-prenotazioni",
@@ -73,8 +73,7 @@ const firebaseConfig = {
     appId: "1:1077584417614:web:2dbf35b1f1c647c5ff041f",
     measurementId: "G-N283TL911D"
   };
-  
-  // ========================================================================
+  // ==========================================
 
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
@@ -101,7 +100,6 @@ const firebaseConfig = {
     if(!email || !pw){ showAuthMsg('Inserisci email e password', true); return; }
     try {
       await auth.signInWithEmailAndPassword(email, pw);
-      // onAuthStateChanged gestirà il resto
     } catch(err){
       console.error(err);
       showAuthMsg('Errore login: ' + (err.message || err.code), true);
@@ -110,24 +108,20 @@ const firebaseConfig = {
 
   signOutBtn.addEventListener('click', ()=>auth.signOut());
 
-  // controllo auth
   auth.onAuthStateChanged(async (user)=>{
     if(user){
-      // verifica che esista un documento admins/{uid}
       const adminDoc = await db.collection('admins').doc(user.uid).get();
       if(!adminDoc.exists){
         showAuthMsg('Non sei autorizzato come admin.', true);
         await auth.signOut();
         return;
       }
-      // OK: mostra pannello admin
       authSection.style.display = 'none';
       adminSection.style.display = 'block';
       signOutBtn.style.display = 'inline-block';
       userEmail.textContent = user.email;
       attachBookingsListener();
     } else {
-      // logout
       authSection.style.display = 'block';
       adminSection.style.display = 'none';
       signOutBtn.style.display = 'none';
@@ -187,9 +181,10 @@ const firebaseConfig = {
     }
   });
 
-  document.getElementById('refresh').addEventListener('click', ()=>{ if(unsubscribeBookings) { unsubscribeBookings(); unsubscribeBookings = null; attachBookingsListener(); } });
+  document.getElementById('refresh').addEventListener('click', ()=>{
+    if(unsubscribeBookings) { unsubscribeBookings(); unsubscribeBookings = null; attachBookingsListener(); }
+  });
 
-  // Export CSV
   document.getElementById('exportCsv').addEventListener('click', async ()=>{
     const snap = await db.collection('bookings').orderBy('date').orderBy('time').get();
     if(snap.empty){ alert('Nessuna prenotazione da esportare'); return; }
@@ -203,7 +198,6 @@ const firebaseConfig = {
     const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download='prenotazioni_gelatomania.csv'; a.click();
   });
 
-  // Delete all
   document.getElementById('deleteAll').addEventListener('click', async ()=>{
     if(!confirm('Eliminare tutte le prenotazioni (azione irreversibile)?')) return;
     const snap = await db.collection('bookings').get();
@@ -216,5 +210,3 @@ const firebaseConfig = {
 </script>
 </body>
 </html>
-
-
