@@ -23,9 +23,9 @@ h2,h3{margin-top:0}
   <div class="card">
     <h2>Ristorante Bar Gelatomania</h2>
     <h3>Prenota il tuo tavolo</h3>
-    <label>Nome</label>
+    <label>Nome <span style="color:red">*</span></label>
     <input id="name" type="text" placeholder="Il tuo nome" required>
-    <label>Telefono</label>
+    <label>Telefono <span style="color:red">*</span></label>
     <input id="phone" type="tel" placeholder="Numero di telefono" required>
     <label>Numero adulti</label>
     <input id="adults" type="number" min="1" value="1" required>
@@ -38,7 +38,7 @@ h2,h3{margin-top:0}
     </select>
     <label>Data</label>
     <input id="date" type="date" required>
-    <label>Orario</label>
+    <label>Orario (12:00 - 14:30)</label>
     <input id="time" type="time" min="12:00" max="14:30" required>
     <label>Note</label>
     <textarea id="notes" placeholder="Eventuali note"></textarea>
@@ -52,7 +52,7 @@ h2,h3{margin-top:0}
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
 <script>
-  const firebaseConfig = {
+const firebaseConfig = {
     apiKey: "AIzaSyDhkuWdU6n2kvitoaHyK0jlyYrPLR_2wQ4",
     authDomain: "gelatomania-prenotazioni.firebaseapp.com",
     projectId: "gelatomania-prenotazioni",
@@ -60,51 +60,56 @@ h2,h3{margin-top:0}
     messagingSenderId: "1077584417614",
     appId: "1:1077584417614:web:2dbf35b1f1c647c5ff041f",
     measurementId: "G-N283TL911D"
-  };
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
+const bookBtn = document.getElementById('bookBtn');
+const msgEl = document.getElementById('msg');
 
-  const bookBtn = document.getElementById('bookBtn');
-  const msgEl = document.getElementById('msg');
+function showMsg(t, err=false){
+  msgEl.textContent = t;
+  msgEl.className = err ? 'error' : 'success';
+  setTimeout(()=>{ msgEl.textContent=''; msgEl.className='small'; }, 4000);
+}
 
-  function showMsg(t, err=false){
-    msgEl.textContent = t;
-    msgEl.className = err ? 'error' : 'success';
-    setTimeout(()=>{ msgEl.textContent=''; msgEl.className='small'; }, 4000);
+bookBtn.addEventListener('click', async ()=>{
+  const name = document.getElementById('name').value.trim();
+  const phone = document.getElementById('phone').value.trim();
+  const adults = parseInt(document.getElementById('adults').value);
+  const children = parseInt(document.getElementById('children').value) || 0;
+  const area = document.getElementById('area').value;
+  const date = document.getElementById('date').value;
+  const time = document.getElementById('time').value;
+  const notes = document.getElementById('notes').value.trim();
+
+  if(!name || !phone || !date || !time || !adults){
+    showMsg('Compila tutti i campi obbligatori (*)', true);
+    return;
   }
 
-  bookBtn.addEventListener('click', async ()=>{
-    const name = document.getElementById('name').value.trim();
-    const phone = document.getElementById('phone').value.trim();
-    const adults = parseInt(document.getElementById('adults').value);
-    const children = parseInt(document.getElementById('children').value) || 0;
-    const area = document.getElementById('area').value;
-    const date = document.getElementById('date').value;
-    const time = document.getElementById('time').value;
-    const notes = document.getElementById('notes').value.trim();
+  // Controllo orario
+  if(time < "12:00" || time > "14:30"){
+    showMsg('Orario non valido. Scegli tra 12:00 e 14:30', true);
+    return;
+  }
 
-    if(!name || !phone || !date || !time || !adults){
-      showMsg('Compila tutti i campi obbligatori', true);
-      return;
-    }
-
-    try {
-      await db.collection('bookings').add({
-        name, phone, adults, children, area, date, time, notes,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
-      showMsg('Prenotazione avvenuta con successo!');
-      document.getElementById('name').value='';
-      document.getElementById('phone').value='';
-      document.getElementById('adults').value=1;
-      document.getElementById('children').value=0;
-      document.getElementById('notes').value='';
-    } catch(err){
-      console.error(err);
-      showMsg('Errore durante la prenotazione', true);
-    }
-  });
+  try {
+    await db.collection('bookings').add({
+      name, phone, adults, children, area, date, time, notes,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    showMsg('Prenotazione avvenuta con successo!');
+    document.getElementById('name').value='';
+    document.getElementById('phone').value='';
+    document.getElementById('adults').value=1;
+    document.getElementById('children').value=0;
+    document.getElementById('notes').value='';
+  } catch(err){
+    console.error(err);
+    showMsg('Errore durante la prenotazione', true);
+  }
+});
 </script>
 </body>
 </html>
