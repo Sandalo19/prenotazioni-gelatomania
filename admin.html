@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Admin — Prenotazioni Gelatomania</title>
+<style>
+  :root{--bg:#fafafa;--card:#fff;--accent:#A43F3F;--muted:#666}
+  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);margin:0;color:#111}
+  .container{max-width:980px;margin:20px auto;padding:16px}
+  .card{background:var(--card);border-radius:10px;padding:16px;box-shadow:0 6px 22px rgba(0,0,0,0.06)}
+  input{padding:8px;border-radius:6px;border:1px solid #e6e6e6;width:100%}
+  .btn{padding:8px 12px;border-radius:8px;background:var(--accent);color:white;border:0;cursor:pointer}
+  .btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+  .row{display:flex;gap:8px}
+  .small{font-size:.9rem;color:var(--muted)}
+  .res{border:1px solid #f0f0f0;padding:10px;border-radius:8px;margin-bottom:8px}
+  .topbar{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:12px}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="card">
+    <div class="topbar">
+      <h2>Pannello Admin — Ristorante Bar Gelatomania</h2>
+      <div>
+        <button id="signOut" class="btn ghost" style="display:none">Esci</button>
+      </div>
+    </div>
+
+    <div id="authSection">
+      <h3>Login amministratore</h3>
+      <div style="max-width:420px">
+        <label>Email</label>
+        <input id="email" type="email" placeholder="admin@esempio.it">
+        <label>Password</label>
+        <input id="password" type="password" placeholder="password">
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button id="signIn" class="btn">Accedi</button>
+        </div>
+        <div id="authMsg" class="small" style="margin-top:8px"></div>
+      </div>
+    </div>
+
+    <div id="adminSection" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div class="small">Sei loggato come <span id="userEmail"></span></div>
+        <div>
+          <button id="refresh" class="btn ghost">Aggiorna</button>
+          <button id="exportCsv" class="btn ghost">Esporta CSV</button>
+          <button id="deleteAll" class="btn ghost">Elimina tutte</button>
+        </div>
+      </div>
+
+      <div id="list" style="margin-top:12px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
+<script>
+  // ======= INSERISCI QUI LA TUA FIREBASE CONFIG (stessa del index.html) =======
+  const firebaseConfig = {
+    apiKey: "INSERISCI_API_KEY",
+    authDomain: "PROJECT_ID.firebaseapp.com",
+    projectId: "PROJECT_ID",
+  };
+  // ========================================================================
+
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+
+  // DOM
+  const signInBtn = document.getElementById('signIn');
+  const signOutBtn = document.getElementById('signOut');
+  const emailIn = document.getElementById('email');
+  const passIn = document.getElementById('password');
+  const authMsg = document.getElementById('authMsg');
+  const authSection = document.getElementById('authSection');
+  const adminSection = document.getElementById('adminSection');
+  const userEmail = document.getElementById('userEmail');
+  const listEl = document.getElementById('list');
+
+  let unsubscribeBookings = null;
+
+  function showAuthMsg(t, err=false){ authMsg.textContent = t; authMsg.style.color = err ? '#b00020' : 'green'; setTimeout(()=>authMsg.textContent='',4000); }
+
+  signInBtn.addEventListener('click', async ()=>{
+    const email = emailIn.value.trim();
+    const pw = passIn.value;
+    if(!email || !pw){ showAuthMsg('Inserisci email e password', true); return; }
+    try {
+      await auth.signInWithEmailAndPassword(email, pw);
+      // onAuthStateChanged gestirà il resto
+    } catch(err){
+      console.error(err);
+      showAuthMsg('Errore login: ' + (err.message || err.code), true);
+    }
+  });
+
+  signOutBtn.addEventListener('click', ()=>auth.signOut());
+
+  // controllo auth
+  auth.onAuthStateChanged(async (user)=>{
+    if(user){
+      // verifica che esista un documento admins/{uid}
+      const adminDoc = await db.collection('admins').doc(user.uid).get();
+      if(!adminDoc.exists){
+        showAuthMsg('Non sei autorizzato come admin.', true);
+        await auth.signOut();
+        return;
+      }
+      // OK: mostra pannello admin
+      authSection.style.display = 'none';
+      adminSection.style.display = 'block';
+      signOutBtn.style.display = 'inline-block';
+      userEmail.textContent = user.email;
+      attachBookingsListener();
+    } else {
+      // logout
+      authSection.style.display = 'block';
+      adminSection.style.display = 'none';
+      signOutBtn.style.display = 'none';
+      userEmail.textContent = '';
+      if(unsubscribeBookings) { unsubscribeBookings(); unsubscribeBookings = null; }
+      listEl.innerHTML = '';
+    }
+  });
+
+  function attachBookingsListener(){
+    if(unsubscribeBookings) unsubscribeBookings();
+    unsubscribeBookings = db.collection('bookings').orderBy('date').orderBy('time')
+      .onSnapshot(snapshot=>{
+        const items = [];
+        snapshot.forEach(doc=>{
+          items.push({ id: doc.id, ...doc.data() });
+        });
+        renderList(items);
+      }, err => {
+        console.error('snapshot error', err);
+      });
+  }
+
+  function renderList(items){
+    listEl.innerHTML = '';
+    if(!items.length) { listEl.innerHTML = '<div class="small">Nessuna prenotazione presente.</div>'; return; }
+    items.forEach(it=>{
+      const d = document.createElement('div');
+      d.className = 'res';
+      const created = it.createdAt && it.createdAt.toDate ? it.createdAt.toDate().toLocaleString() : '';
+      d.innerHTML = `
+        <div style="display:flex;justify-content:space-between">
+          <div><strong>${escapeHtml(it.name)}</strong> — ${escapeHtml(it.phone)}</div>
+          <div class="small">${escapeHtml(it.date)} ${escapeHtml(it.time)}</div>
+        </div>
+        <div class="small">${it.adults} adulti ${it.children? '· ' + it.children + ' bambini': ''} · ${it.area=='inside'?'Dentro':'Fuori'}</div>
+        ${it.notes? '<div class="small">Note: ' + escapeHtml(it.notes) + '</div>': ''}
+        <div class="row" style="margin-top:8px">
+          <button class="btn ghost" data-action="delete" data-id="${it.id}">Elimina</button>
+        </div>
+        <div class="small" style="margin-top:6px">Inserita: ${escapeHtml(created)}</div>
+      `;
+      listEl.appendChild(d);
+    });
+  }
+
+  listEl.addEventListener('click', async (e)=>{
+    const btn = e.target.closest('button');
+    if(!btn) return;
+    const action = btn.dataset.action;
+    const id = btn.dataset.id;
+    if(action === 'delete'){
+      if(!confirm('Eliminare questa prenotazione?')) return;
+      try {
+        await db.collection('bookings').doc(id).delete();
+      } catch(err){ console.error(err); alert('Errore eliminazione'); }
+    }
+  });
+
+  document.getElementById('refresh').addEventListener('click', ()=>{ if(unsubscribeBookings) { unsubscribeBookings(); unsubscribeBookings = null; attachBookingsListener(); } });
+
+  // Export CSV
+  document.getElementById('exportCsv').addEventListener('click', async ()=>{
+    const snap = await db.collection('bookings').orderBy('date').orderBy('time').get();
+    if(snap.empty){ alert('Nessuna prenotazione da esportare'); return; }
+    const rows = [['ID','Nome','Telefono','Data','Ora','Adulti','Bambini','Area','Note','Creato']];
+    snap.forEach(doc=>{
+      const r = doc.data();
+      const created = r.createdAt && r.createdAt.toDate ? r.createdAt.toDate().toISOString() : '';
+      rows.push([doc.id, r.name, r.phone, r.date, r.time, r.adults, r.children, r.area, r.notes, created]);
+    });
+    const csv = rows.map(r => r.map(c => `"${String(c||'').replace(/"/g,'""')}"`).join(',')).join('\r\n');
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download='prenotazioni_gelatomania.csv'; a.click();
+  });
+
+  // Delete all
+  document.getElementById('deleteAll').addEventListener('click', async ()=>{
+    if(!confirm('Eliminare tutte le prenotazioni (azione irreversibile)?')) return;
+    const snap = await db.collection('bookings').get();
+    const batch = db.batch();
+    snap.forEach(doc => batch.delete(doc.ref));
+    await batch.commit();
+  });
+
+  function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+</script>
+</body>
+</html>
